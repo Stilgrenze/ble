@@ -63,6 +63,13 @@ func AdvertiseNameAndServices(ctx context.Context, name string, uuids ...UUID) e
 	return defaultDevice.AdvertiseNameAndServices(ctx, name, uuids...)
 }
 
+// ChangeAdvertisement changes the running advertises device name, and specified service UUIDs.
+// It tres to fit the UUIDs in the advertising packet as much as possi
+// If name doesn't fit in the advertising packet, it will be put in scan response.
+func ChangeAdvertisement(name string, uuids ...UUID) error {
+	return defaultDevice.ChangeAdvertisement(name, uuids...)
+}
+
 // AdvertiseIBeaconData advertise iBeacon with given manufacturer data.
 func AdvertiseIBeaconData(ctx context.Context, b []byte) error {
 	if defaultDevice == nil {

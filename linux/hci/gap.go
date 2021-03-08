@@ -88,6 +88,11 @@ func (h *HCI) AdvertiseAdv(a ble.Advertisement) error {
 // It tries to fit the UUIDs in the advertising data as much as possible.
 // If name doesn't fit in the advertising data, it will be put in scan response.
 func (h *HCI) AdvertiseNameAndServices(name string, uuids ...ble.UUID) error {
+	h.CreateAdvertisement(name, uuids...)
+	return h.Advertise()
+}
+
+func (h *HCI) CreateAdvertisement(name string, uuids ...ble.UUID) error {
 	ad, err := adv.NewPacket(adv.Flags(adv.FlagGeneralDiscoverable | adv.FlagLEOnly))
 	if err != nil {
 		return err
@@ -117,9 +122,10 @@ func (h *HCI) AdvertiseNameAndServices(name string, uuids ...ble.UUID) error {
 	case sr.Append(adv.ShortName(name)) == nil:
 	}
 	if err := h.SetAdvertisement(ad.Bytes(), sr.Bytes()); err != nil {
-		return nil
+		return err
 	}
-	return h.Advertise()
+
+	return nil
 }
 
 // AdvertiseMfgData avertises the given manufacturer data.

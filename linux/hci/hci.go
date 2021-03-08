@@ -110,6 +110,7 @@ type HCI struct {
 	conns        map[uint16]*Conn
 	chMasterConn chan *Conn // Dial returns master connections.
 	chSlaveConn  chan *Conn // Peripheral accept slave connections.
+	chSlaveConn2 chan *Conn // Peripheral accept slave connections.
 
 	connectedHandler    func(evt.LEConnectionComplete)
 	disconnectedHandler func(evt.DisconnectionComplete)
@@ -472,10 +473,12 @@ func (h *HCI) handleCommandStatus(b []byte) error {
 }
 
 func (h *HCI) handleLEConnectionComplete(b []byte) error {
+	log.Println("MEEP MEEP", string(b))
 	e := evt.LEConnectionComplete(b)
 	c := newConn(h, e)
 	h.muConns.Lock()
 	h.conns[e.ConnectionHandle()] = c
+	log.Println("Conns: ", len(h.conns))
 	h.muConns.Unlock()
 	if e.Role() == roleMaster {
 		if e.Status() == 0x00 {
@@ -505,7 +508,9 @@ func (h *HCI) handleLEConnectionComplete(b []byte) error {
 		// So we also re-enable the advertising when a connection disconnected
 		h.params.RLock()
 		if h.params.advEnable.AdvertisingEnable == 1 {
-			go h.Send(&cmd.LESetAdvertiseEnable{0}, nil)
+			go h.Send(&cmd.LESetAdvertiseEnable{1}, nil)
+			// TODO check max Connections
+			//go h.Send(&cmd.LESetAdvertiseEnable{0}, nil)
 		}
 		h.params.RUnlock()
 	}

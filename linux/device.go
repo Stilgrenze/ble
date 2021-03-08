@@ -122,9 +122,14 @@ func (d *Device) AdvertiseNameAndServices(ctx context.Context, name string, uuid
 	if err := d.HCI.AdvertiseNameAndServices(name, uuids...); err != nil {
 		return err
 	}
+
 	<-ctx.Done()
 	d.HCI.StopAdvertising()
 	return ctx.Err()
+}
+
+func (d *Device) ChangeAdvertisement(name string, uuids ...ble.UUID) error {
+	return d.HCI.CreateAdvertisement(name, uuids...)
 }
 
 // AdvertiseMfgData avertises the given manufacturer data.
