@@ -227,7 +227,10 @@ func (h *HCI) init() error {
 
 // Send ...
 func (h *HCI) Send(c Command, r CommandRP) error {
+	// Only allow on send at a time
+	h.Mutex.Lock()
 	b, err := h.send(c)
+	h.Mutex.Unlock()
 	if err != nil {
 		return err
 	}
@@ -245,7 +248,14 @@ func (h *HCI) send(c Command) ([]byte, error) {
 		return nil, h.err
 	}
 	p := &pkt{c, make(chan []byte)}
-	b := <-h.chCmdBufs
+	var b []byte
+
+	select {
+	case <-time.After(10 * time.Millisecond):
+		return nil, fmt.Errorf("hci: cmd not allowed in time")
+	case b = <-h.chCmdBufs:
+	}
+
 	b[0] = byte(pktTypeCommand) // HCI header
 	b[1] = byte(c.OpCode())
 	b[2] = byte(c.OpCode() >> 8)

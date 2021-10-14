@@ -67,6 +67,9 @@ func AdvertiseNameAndServices(ctx context.Context, name string, uuids ...UUID) e
 // It tres to fit the UUIDs in the advertising packet as much as possi
 // If name doesn't fit in the advertising packet, it will be put in scan response.
 func ChangeAdvertisement(name string, uuids ...UUID) error {
+	if defaultDevice == nil {
+		return ErrDefaultDevice
+	}
 	return defaultDevice.ChangeAdvertisement(name, uuids...)
 }
 

@@ -82,6 +82,8 @@ func loop(dev *hci.HCI, s *gatt.Server, mtu int) {
 type Device struct {
 	HCI    *hci.HCI
 	Server *gatt.Server
+
+	advertising bool
 }
 
 // AddService adds a service to database.
@@ -129,7 +131,26 @@ func (d *Device) AdvertiseNameAndServices(ctx context.Context, name string, uuid
 }
 
 func (d *Device) ChangeAdvertisement(name string, uuids ...ble.UUID) error {
-	return d.HCI.CreateAdvertisement(name, uuids...)
+	if d.advertising == true {
+		if err := d.HCI.StopAdvertising(); err != nil {
+			d.advertising = false
+			return err
+		}
+		d.advertising = false
+	}
+
+	if err := d.HCI.CreateAdvertisement(name, uuids...); err != nil {
+		return err
+	}
+
+	if d.advertising == false {
+		if err := d.HCI.Advertise(); err != nil {
+			return err
+		}
+		d.advertising = true
+	}
+
+	return nil
 }
 
 // AdvertiseMfgData avertises the given manufacturer data.
