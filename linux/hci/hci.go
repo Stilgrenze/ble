@@ -251,8 +251,8 @@ func (h *HCI) send(c Command) ([]byte, error) {
 	var b []byte
 
 	select {
-	case <-time.After(10 * time.Millisecond):
-		return nil, fmt.Errorf("hci: cmd not allowed in time")
+	case <-time.After(100 * time.Millisecond):
+		panic(fmt.Errorf("hci: cmd not allowed in time")) // panic because HCI is no longer available
 	case b = <-h.chCmdBufs:
 	}
 
